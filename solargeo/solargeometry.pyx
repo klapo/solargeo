@@ -4,6 +4,7 @@ import cython
 ################## Solar Geometry Function ########################
 ###################################################################
 
+import numpy as np
 def SUNAE( YEAR, DAY, HOUR, LAT, LONG, refraction_flag=1):
 #--------------------------------------------------------------------
 ## DESCRIPTION ##
@@ -63,10 +64,10 @@ def SUNAE( YEAR, DAY, HOUR, LAT, LONG, refraction_flag=1):
 
 #--------------------------------------------------------------------
 ## INPUT/OUTPUT ##
-#  Input:
+#  Input (all must be ndarray with specified types):
 #     YEAR     year (INTEGER; range 1950 to 2050)
 #     DAY      day of year at LAT-LONG location (INTEGER; range 1-366)
-#     HOUR     hour of DAY [GMT or UT] (REAL; range -13.0 to 36.0)
+#     HOUR     hour of DAY [GMT or UT] (INTEGER; range -13.0 to 36.0)
 #              = (local hour) + (time zone number)
 #                + (Daylight Savings Time correction; -1 or 0)
 #              (local hour) range is 0 to 24,
@@ -76,8 +77,13 @@ def SUNAE( YEAR, DAY, HOUR, LAT, LONG, refraction_flag=1):
 #              Example: 8:30 am Eastern Daylight Time would be
 #
 #                          HOUR = 8.5 + 5 - 1 = 12.5
-#     LAT      latitude [degrees] - north is positive
-#     LONG     longitude [degrees] - east is positive
+#     LAT      latitude [FLOAT; degrees] - north is positive
+#     LONG     longitude [FLOAT; degrees] - east is positive
+#
+#  Possible arrays:
+#  - 1 time step w/ 2D space (arrays in lat and lon)
+#  - arrays in lat, lon, and time (recommended: use meshgrid output of input variables)
+#
 #  Output:
 #     AZ       solar azimuth angle (measured east from north, 0 to 360 degs)
 #     EL       solar elevation angle (angle above the horizon)
@@ -125,10 +131,6 @@ def SUNAE( YEAR, DAY, HOUR, LAT, LONG, refraction_flag=1):
 #    ..
 
 #===================================================================
-## Libraries 
-    import numpy as np
-
-#===================================================================
 ## Error handling
     if np.min(YEAR)<1950 or np.max(YEAR)>2050:
         raise ValueError('YEAR must be between 1950 and 2050')
@@ -141,6 +143,16 @@ def SUNAE( YEAR, DAY, HOUR, LAT, LONG, refraction_flag=1):
     if np.min(LONG)<-180.0 or np.max(LONG)>180.0:
         raise ValueError('LONG must be between -180 and 180')
 
+## Check array dimensions - need to add check for type (has to be ndarray, not float. Indexing breaks otherwise)
+    if LAT.shape != LONG.shape:
+        raise ValueError('Latitude and Longitude must be arrays of same size -- use numpy.meshgrid')
+    if YEAR.shape != DAY.shape or YEAR.shape != HOUR.shape:
+        raise ValueError('Time variables must be arrays of same size')
+    if YEAR.shape[0] > 1 and LAT.shape[0] > 1:
+        if LAT.shape != YEAR.shape:
+            raise ValeuError('Broadcasting arrays in both time and space requires output from numpy.meshgrid\
+            -- all arrays must be the same size')
+                         
 #===================================================================
 ## Julian date/Coordinates 
     RPD = np.pi/180.
@@ -207,6 +219,7 @@ def SUNAE( YEAR, DAY, HOUR, LAT, LONG, refraction_flag=1):
     inds = np.nonzero(LMST<0.)
     LMST[inds] += 24.
     LMST = LMST*15.*RPD
+    
 # hour angle in radians between -pi and pi
     HA  = LMST - RA
     inds = np.nonzero(HA < -PI)
@@ -237,7 +250,7 @@ def SUNAE( YEAR, DAY, HOUR, LAT, LONG, refraction_flag=1):
         inds = np.nonzero(EL>=19.225)
         REFRAC[inds] = 0.00452*3.51823 / np.tan(EL[inds]*RPD)
         inds = np.nonzero( (EL>-0.766) & (EL<19.225) )
-        REFRAC[inds] = 3.51823 * (0.1594 + EL[inds]*(0.0196 + 0.00002*EL[inds]) ) / (1. + EL[inds]*(0.505 + 0.0845*EL[inds]))
+        REFRAC[inds] = 3.51823 * (0.1594+EL[inds]*(0.0196+0.00002*EL[inds]))/(1.+EL[inds]*(0.505+0.0845*EL[inds]))
         inds = np.nonzero(EL<=-0.766)
         REFRAC[inds] = 0.0
     
@@ -253,7 +266,8 @@ def SUNAE( YEAR, DAY, HOUR, LAT, LONG, refraction_flag=1):
         raise ValueError('Calculated EL out of range')
     if np.min(AZ)<0.0 or np.max(AZ)>360.0:
         raise ValueError('Calculated AZ out of range')
-
+    inds = np.nonzero(EL < 0)
+    EL[inds] = 0
     return EL, AZ, SOLDST
 
 ###################################################################
