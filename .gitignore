@@ -1,0 +1,5 @@
+# Python Package Generated Files #
+##################################
+# Specific files/directories to ignore
+files.txt
+/build/
