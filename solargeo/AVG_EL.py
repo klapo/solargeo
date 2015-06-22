@@ -32,7 +32,7 @@ def AVG_EL(TIME,lat,lon,tz,REF):
 #   SUNAE
 
     ## Libraries
-    import solargeometry
+    import solargeo
     import numpy as np
     from datetime import datetime, timedelta
     import pandas as pd

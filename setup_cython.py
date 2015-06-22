@@ -12,6 +12,8 @@
 
 # Setup.py from http://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
 
+# Check out netcdf4 github (NCAR unidata) for example of successful setup.py
+
 from distutils.core import setup
 from distutils.extension import Extension
 
@@ -44,6 +46,7 @@ setup(
 	author_email="lapok@atmos.washington.edu",
 	description="""Solar geometry parameters -- compiled c code""",
 	package_dir = 'solargeocee',
+	packages=['solarrgeocee'],
 	version='0.2',
 	cmdclass = cmdclass,
 	ext_modules=ext_modules,
