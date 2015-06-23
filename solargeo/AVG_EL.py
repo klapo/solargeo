@@ -56,7 +56,7 @@ def AVG_EL(TIME,lat,lon,tz,REF):
     yyyy = t_fine.year
     jday = t_fine.dayofyear
     hh = t_fine.hour+t_fine.minute/60.+tz
-    EL_fine = solargeometry.SUNAE(yyyy,jday,hh,lat,lon)[0]
+    EL_fine = solargeo.SUNAE(yyyy,jday,hh,lat,lon)[0]
     mew_fine = pd.DataFrame(data=np.sin(EL_fine*np.pi/180.), index=t_fine, columns=['el_ang'])
     EL_fine = np.arcsin(mew_fine['el_ang'])*180./np.pi
 

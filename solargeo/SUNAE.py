@@ -147,7 +147,7 @@ def SUNAE( YEAR, DAY, HOUR, LAT, LONG, refraction_flag=1):
         raise ValueError('Latitude and Longitude must be arrays of same size -- use numpy.meshgrid')
     if YEAR.shape != DAY.shape or YEAR.shape != HOUR.shape:
         raise ValueError('Time variables must be arrays of same size')
-    if YEAR.shape[0] > 1 and LAT.shape[0] > 1:
+    if YEAR.shape[0] > 1 and LAT.size > 1:
         if LAT.shape != YEAR.shape:
             raise ValueError('Broadcasting arrays in both time and space requires output from numpy.meshgrid\
             -- all arrays must be the same size')
