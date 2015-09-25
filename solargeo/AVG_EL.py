@@ -61,7 +61,7 @@ def AVG_EL(TIME,lat,lon,tz,REF):
     EL_fine = np.arcsin(mew_fine['el_ang'])*180./np.pi
 
     # Average elevation angle at original timestep
-    resample_rule_secs = str(dt.seconds)+'S'
+    resample_rule_secs = str(int(dt.total_seconds()))+'S'
     mew_coarse = mew_fine.resample(resample_rule_secs,how='mean',label='left')
     EL = np.arcsin(mew_coarse['el_ang'])*180./np.pi
     EL = EL.where(EL>0,0)
