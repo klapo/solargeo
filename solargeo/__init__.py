@@ -1,3 +1,4 @@
-__all__ = ["SUNAE", "AVG_EL"]
-from SUNAE import SUNAE
-from AVG_EL import AVG_EL
+from .sunae import sunae
+from .avg_el import avg_el
+
+__all__ = ["sunae", "avg_el"]
